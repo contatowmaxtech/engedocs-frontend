@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EngeDocs — Gestão Documental</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#0f172a;color:#e2e8f0;height:100vh;display:flex;overflow:hidden}
+
+/* Sidebar */
+.sidebar{width:220px;min-width:220px;background:#1e293b;border-right:1px solid #334155;display:flex;flex-direction:column;height:100vh}
+.sidebar-header{padding:16px;border-bottom:1px solid #334155}
+.logo{display:flex;align-items:center;gap:8px}
+.logo-icon{width:32px;height:32px;background:linear-gradient(135deg,#3b82f6,#1d4ed8);border-radius:8px;display:flex;align-items:center;justify-content:center}
+.logo-icon i{font-size:17px;color:#fff}
+.logo-name{font-size:15px;font-weight:600;color:#f1f5f9}
+.logo-sub{font-size:11px;color:#64748b}
+.nav{flex:1;overflow-y:auto;padding:8px}
+.nav-section{padding:12px 8px 4px;font-size:10px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:.8px}
+.nav-item{display:flex;align-items:center;gap:8px;padding:8px 10px;font-size:13px;color:#94a3b8;cursor:pointer;border-radius:8px;margin-bottom:1px;transition:all .15s;user-select:none}
+.nav-item:hover{background:#334155;color:#e2e8f0}
+.nav-item.active{background:#1d4ed8;color:#fff}
+.nav-item i{font-size:17px}
+.sidebar-footer{padding:12px;border-top:1px solid #334155}
+.user-info{display:flex;align-items:center;gap:8px}
+.avatar{width:32px;height:32px;border-radius:50%;background:#1d4ed8;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#fff;flex-shrink:0}
+.user-name{font-size:12px;font-weight:500;color:#e2e8f0}
+.user-role{font-size:11px;color:#64748b}
+.btn-logout{margin-left:auto;background:none;border:none;color:#64748b;cursor:pointer;padding:4px;border-radius:6px}
+.btn-logout:hover{color:#ef4444;background:#450a0a}
+
+/* Main */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;background:#0f172a}
+.topbar{background:#1e293b;border-bottom:1px solid #334155;padding:12px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.topbar-title{font-size:15px;font-weight:600;color:#f1f5f9;flex:1}
+.search-wrap{display:flex;align-items:center;gap:8px;background:#0f172a;border:1px solid #334155;border-radius:8px;padding:7px 12px;width:220px}
+.search-wrap i{font-size:15px;color:#475569}
+.search-wrap input{background:none;border:none;outline:none;font-size:13px;color:#e2e8f0;width:100%}
+.search-wrap input::placeholder{color:#475569}
+.content{flex:1;overflow-y:auto;padding:20px}
+
+/* Pages */
+.page{display:none}
+.page.active{display:block}
+
+/* Cards / Stats */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.stat-card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:16px}
+.stat-label{font-size:12px;color:#64748b;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.stat-label i{font-size:15px}
+.stat-val{font-size:24px;font-weight:600;color:#f1f5f9}
+.stat-sub{font-size:11px;color:#64748b;margin-top:3px}
+.progress{background:#334155;border-radius:10px;height:5px;margin-top:8px}
+.progress-bar{height:5px;border-radius:10px;background:#3b82f6}
+
+/* Table */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.section-title{font-size:14px;font-weight:600;color:#f1f5f9}
+.table-wrap{background:#1e293b;border:1px solid #334155;border-radius:12px;overflow:hidden}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead{background:#0f172a}
+th{padding:10px 14px;text-align:left;font-weight:500;font-size:12px;color:#64748b;border-bottom:1px solid #334155}
+td{padding:10px 14px;color:#cbd5e1;border-bottom:1px solid #1e293b}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#334155}
+.empty-row td{text-align:center;color:#475569;padding:32px}
+
+/* Badges */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:500}
+.badge.green{background:#052e16;color:#4ade80}
+.badge.amber{background:#431407;color:#fb923c}
+.badge.blue{background:#0c2a69;color:#60a5fa}
+.badge.red{background:#450a0a;color:#f87171}
+.badge.gray{background:#1e293b;color:#94a3b8;border:1px solid #334155}
+
+/* File icons */
+.file-icon{width:28px;height:28px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+.file-icon.pdf{background:#450a0a;color:#f87171}
+.file-icon.dwg{background:#0c2a69;color:#60a5fa}
+.file-icon.docx{background:#0c1a4a;color:#818cf8}
+.file-icon.xlsx{background:#052e16;color:#4ade80}
+.file-icon.img{background:#431407;color:#fb923c}
+.file-icon.gray{background:#1e293b;color:#94a3b8}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid #334155;background:#1e293b;color:#e2e8f0;transition:all .15s}
+.btn:hover{background:#334155}
+.btn.primary{background:#1d4ed8;border-color:#1d4ed8;color:#fff}
+.btn.primary:hover{background:#1e40af}
+.btn.danger{background:#7f1d1d;border-color:#7f1d1d;color:#fca5a5}
+.btn.danger:hover{background:#450a0a}
+.btn i{font-size:16px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.action-btn{padding:5px 8px;border-radius:6px;border:1px solid #334155;background:none;cursor:pointer;font-size:12px;color:#64748b;display:inline-flex;align-items:center;gap:3px;transition:all .15s}
+.action-btn:hover{background:#334155;color:#e2e8f0}
+.action-btn.red:hover{background:#450a0a;color:#f87171;border-color:#7f1d1d}
+.action-btn i{font-size:15px}
+
+/* Filters */
+.filter-bar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.filter-select{padding:7px 10px;border-radius:8px;border:1px solid #334155;background:#1e293b;font-size:13px;color:#e2e8f0;cursor:pointer}
+.filter-input{padding:7px 10px;border-radius:8px;border:1px solid #334155;background:#1e293b;font-size:13px;color:#e2e8f0;outline:none;width:180px}
+.filter-input:focus{border-color:#3b82f6}
+
+/* Two columns */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:16px}
+.card-title{font-size:13px;font-weight:600;color:#94a3b8;margin-bottom:12px}
+
+/* Activity feed */
+.activity-item{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid #334155}
+.activity-item:last-child{border-bottom:none}
+.act-icon{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.act-icon.up{background:#052e16;color:#4ade80}
+.act-icon.del{background:#450a0a;color:#f87171}
+.act-icon.edit{background:#0c2a69;color:#60a5fa}
+.act-icon i{font-size:14px}
+.act-text{font-size:12px;color:#cbd5e1;line-height:1.5}
+.act-time{font-size:11px;color:#475569;margin-top:2px}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(2px)}
+.modal{background:#1e293b;border:1px solid #334155;border-radius:14px;width:460px;max-width:95vw;max-height:90vh;display:flex;flex-direction:column}
+.modal-header{padding:16px 20px;border-bottom:1px solid #334155;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.modal-header h3{font-size:15px;font-weight:600;color:#f1f5f9}
+.modal-body{padding:20px;overflow-y:auto}
+.modal-footer{padding:12px 20px;border-top:1px solid #334155;display:flex;justify-content:flex-end;gap:8px;flex-shrink:0}
+.form-row{margin-bottom:14px}
+.form-label{font-size:12px;font-weight:500;color:#94a3b8;margin-bottom:5px;display:block}
+.form-input{width:100%;padding:9px 12px;border-radius:8px;border:1px solid #334155;background:#0f172a;font-size:13px;color:#e2e8f0;outline:none;transition:border .2s}
+.form-input:focus{border-color:#3b82f6}
+.upload-area{border:1.5px dashed #334155;border-radius:10px;padding:28px;text-align:center;cursor:pointer;transition:all .2s}
+.upload-area:hover,.upload-area.drag{border-color:#3b82f6;background:#0c2a69}
+.upload-area i{font-size:32px;color:#475569;margin-bottom:8px}
+.upload-area p{font-size:13px;color:#94a3b8}
+.upload-area span{font-size:11px;color:#475569}
+.upload-file-name{font-size:13px;color:#4ade80;margin-top:8px;display:none}
+
+/* Toast */
+.toast{position:fixed;bottom:20px;right:20px;background:#1e293b;border:1px solid #334155;border-radius:10px;padding:12px 16px;font-size:13px;color:#e2e8f0;display:flex;align-items:center;gap:8px;z-index:999;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.success{border-color:#166534;background:#052e16;color:#4ade80}
+.toast.error{border-color:#7f1d1d;background:#450a0a;color:#f87171}
+.toast i{font-size:16px}
+
+/* Loading overlay */
+#loading{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:200}
+.spinner-lg{width:36px;height:36px;border:3px solid #334155;border-top-color:#3b82f6;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Users */
+.user-row{display:flex;align-items:center;gap:12px;padding:12px;border-bottom:1px solid #334155}
+.user-row:last-child{border-bottom:none}
+.u-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0}
+
+/* Permissions table */
+.perm-table{font-size:12px}
+.perm-table th,.perm-table td{padding:8px 12px}
+.perm-yes{color:#4ade80}
+.perm-no{color:#475569}
+
+/* Responsive */
+@media(max-width:900px){
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .two-col{grid-template-columns:1fr}
+  .sidebar{width:180px;min-width:180px}
+}
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo">
+      <div class="logo-icon"><i class="ti ti-building-factory-2"></i></div>
+      <div><div class="logo-name">EngeDocs</div><div class="logo-sub">Gestão Documental</div></div>
+    </div>
+  </div>
+  <div class="nav">
+    <div class="nav-section">Principal</div>
+    <div class="nav-item active" data-page="dashboard"><i class="ti ti-layout-dashboard"></i> Dashboard</div>
+    <div class="nav-item" data-page="projetos"><i class="ti ti-briefcase"></i> Projetos</div>
+    <div class="nav-item" data-page="documentos"><i class="ti ti-files"></i> Documentos</div>
+    <div class="nav-section">Administração</div>
+    <div class="nav-item admin-only" data-page="usuarios"><i class="ti ti-users"></i> Usuários</div>
+    <div class="nav-item" data-page="historico"><i class="ti ti-history"></i> Histórico</div>
+    <div class="nav-item" data-page="relatorios"><i class="ti ti-chart-bar"></i> Relatórios</div>
+  </div>
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="avatar" id="nav-avatar">?</div>
+      <div><div class="user-name" id="nav-nome">—</div><div class="user-role" id="nav-perfil">—</div></div>
+      <button class="btn-logout" onclick="logout()" title="Sair"><i class="ti ti-logout"></i></button>
+    </div>
+  </div>
+</div>
+
+<!-- Main -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="page-title">Dashboard</div>
+    <div class="search-wrap">
+      <i class="ti ti-search"></i>
+      <input type="text" placeholder="Buscar documentos..." id="busca-global" oninput="buscaGlobal(this.value)">
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="stats-grid" id="stats-grid">
+        <div class="stat-card"><div class="stat-label"><i class="ti ti-briefcase" style="color:#3b82f6"></i> Projetos</div><div class="stat-val" id="s-projetos">—</div><div class="stat-sub" id="s-projetos-sub">carregando...</div></div>
+        <div class="stat-card"><div class="stat-label"><i class="ti ti-files" style="color:#4ade80"></i> Documentos</div><div class="stat-val" id="s-docs">—</div><div class="stat-sub" id="s-docs-sub">carregando...</div></div>
+        <div class="stat-card"><div class="stat-label"><i class="ti ti-users" style="color:#fb923c"></i> Usuários</div><div class="stat-val" id="s-users">—</div><div class="stat-sub" id="s-users-sub">carregando...</div></div>
+        <div class="stat-card"><div class="stat-label"><i class="ti ti-cloud" style="color:#818cf8"></i> Armazenamento</div><div class="stat-val" id="s-storage">—</div><div class="progress"><div class="progress-bar" id="s-storage-bar" style="width:0%"></div></div></div>
+      </div>
+      <div class="two-col">
+        <div>
+          <div class="section-header"><span class="section-title">Projetos recentes</span><button class="btn" onclick="irPara('projetos')">Ver todos</button></div>
+          <div class="table-wrap"><table><thead><tr><th>Projeto</th><th>Status</th><th>Docs</th></tr></thead><tbody id="dash-projetos"><tr class="empty-row"><td colspan="3">Carregando...</td></tr></tbody></table></div>
+        </div>
+        <div>
+          <div class="section-header"><span class="section-title">Atividades recentes</span></div>
+          <div class="card" style="padding:8px 12px" id="dash-historico"><div style="text-align:center;color:#475569;padding:20px;font-size:13px">Carregando...</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROJETOS -->
+    <div class="page" id="page-projetos">
+      <div class="section-header" style="margin-bottom:14px">
+        <span class="section-title">Projetos</span>
+        <button class="btn primary engenheiro-ok" id="btn-novo-projeto" onclick="abrirModalProjeto()"><i class="ti ti-plus"></i> Novo projeto</button>
+      </div>
+      <div class="filter-bar">
+        <select class="filter-select" id="filtro-status-proj" onchange="carregarProjetos()">
+          <option value="">Todos os status</option>
+          <option value="ativo">Ativo</option>
+          <option value="revisao">Revisão</option>
+          <option value="concluido">Concluído</option>
+          <option value="parado">Parado</option>
+        </select>
+        <input class="filter-input" id="filtro-cliente" placeholder="Filtrar por cliente..." oninput="carregarProjetos()">
+      </div>
+      <div class="table-wrap">
+        <table><thead><tr><th>Projeto</th><th>Cliente</th><th>Responsável</th><th>Início</th><th>Status</th><th>Docs</th><th>Ações</th></tr></thead>
+        <tbody id="tbody-projetos"><tr class="empty-row"><td colspan="7">Carregando...</td></tr></tbody></table>
+      </div>
+    </div>
+
+    <!-- DOCUMENTOS -->
+    <div class="page" id="page-documentos">
+      <div class="section-header" style="margin-bottom:14px">
+        <span class="section-title">Documentos</span>
+        <button class="btn primary engenheiro-ok" onclick="abrirModalUpload()"><i class="ti ti-upload"></i> Enviar arquivo</button>
+      </div>
+      <div class="filter-bar">
+        <select class="filter-select" id="filtro-projeto-doc" onchange="carregarDocumentos()"><option value="">Todos os projetos</option></select>
+        <select class="filter-select" id="filtro-tipo-doc" onchange="carregarDocumentos()">
+          <option value="">Todos os tipos</option>
+          <option value="pdf">PDF</option><option value="dwg">DWG</option>
+          <option value="docx">DOCX</option><option value="xlsx">XLSX</option><option value="img">Imagem</option>
+        </select>
+        <input class="filter-input" id="filtro-nome-doc" placeholder="Buscar por nome..." oninput="carregarDocumentos()">
+      </div>
+      <div class="table-wrap">
+        <table><thead><tr><th>Arquivo</th><th>Projeto</th><th>Categoria</th><th>Tamanho</th><th>Enviado por</th><th>Data</th><th>Ações</th></tr></thead>
+        <tbody id="tbody-docs"><tr class="empty-row"><td colspan="7">Carregando...</td></tr></tbody></table>
+      </div>
+    </div>
+
+    <!-- USUÁRIOS -->
+    <div class="page" id="page-usuarios">
+      <div class="section-header" style="margin-bottom:14px">
+        <span class="section-title">Usuários</span>
+        <button class="btn primary" onclick="abrirModalUsuario()"><i class="ti ti-user-plus"></i> Novo usuário</button>
+      </div>
+      <div class="table-wrap" id="lista-usuarios"><div style="padding:24px;text-align:center;color:#475569;font-size:13px">Carregando...</div></div>
+      <div style="margin-top:16px">
+        <div class="card">
+          <div class="card-title">Permissões por perfil</div>
+          <table class="perm-table"><thead><tr><th>Ação</th><th>Administrador</th><th>Engenheiro</th><th>Visualizador</th></tr></thead>
+          <tbody>
+            <tr><td>Ver projetos e documentos</td><td class="perm-yes">✓</td><td class="perm-yes">✓</td><td class="perm-yes">✓</td></tr>
+            <tr><td>Criar / editar projetos</td><td class="perm-yes">✓</td><td class="perm-yes">✓</td><td class="perm-no">✗</td></tr>
+            <tr><td>Enviar documentos</td><td class="perm-yes">✓</td><td class="perm-yes">✓</td><td class="perm-no">✗</td></tr>
+            <tr><td>Excluir documentos</td><td class="perm-yes">✓</td><td class="perm-no">✗</td><td class="perm-no">✗</td></tr>
+            <tr><td>Gerenciar usuários</td><td class="perm-yes">✓</td><td class="perm-no">✗</td><td class="perm-no">✗</td></tr>
+            <tr><td>Ver relatórios</td><td class="perm-yes">✓</td><td class="perm-yes">✓</td><td class="perm-no">✗</td></tr>
+          </tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTÓRICO -->
+    <div class="page" id="page-historico">
+      <div class="section-header" style="margin-bottom:14px"><span class="section-title">Histórico de movimentações</span></div>
+      <div class="filter-bar">
+        <select class="filter-select" id="filtro-acao-hist" onchange="carregarHistorico()">
+          <option value="">Todas as ações</option>
+          <option value="upload">Upload</option><option value="exclusao">Exclusão</option>
+          <option value="edicao_doc">Edição doc.</option><option value="edicao_projeto">Edição projeto</option>
+          <option value="cadastro_usuario">Cadastro usuário</option>
+        </select>
+        <input type="date" class="filter-select" id="filtro-hist-inicio" onchange="carregarHistorico()">
+        <input type="date" class="filter-select" id="filtro-hist-fim" onchange="carregarHistorico()">
+      </div>
+      <div class="table-wrap">
+        <table><thead><tr><th>Data/hora</th><th>Ação</th><th>Descrição</th><th>Projeto</th><th>Usuário</th></tr></thead>
+        <tbody id="tbody-hist"><tr class="empty-row"><td colspan="5">Carregando...</td></tr></tbody></table>
+      </div>
+    </div>
+
+    <!-- RELATÓRIOS -->
+    <div class="page" id="page-relatorios">
+      <div class="section-header" style="margin-bottom:14px"><span class="section-title">Relatórios</span></div>
+      <div class="two-col" style="margin-bottom:16px">
+        <div class="card"><div class="card-title">Documentos por projeto</div><canvas id="chart-proj" height="180"></canvas></div>
+        <div class="card"><div class="card-title">Distribuição por tipo</div><canvas id="chart-tipo" height="180"></canvas></div>
+      </div>
+      <div class="two-col">
+        <div class="card" id="resumo-card"><div class="card-title">Resumo geral</div><div style="color:#475569;font-size:13px">Carregando...</div></div>
+        <div class="card"><div class="card-title">Uploads — últimos 30 dias</div><canvas id="chart-periodo" height="160"></canvas></div>
+      </div>
+    </div>
+
+  </div><!-- content -->
+</div><!-- main -->
+
+<!-- MODAL PROJETO -->
+<div class="modal-overlay" id="modal-projeto" style="display:none">
+  <div class="modal">
+    <div class="modal-header"><h3 id="modal-projeto-titulo">Novo projeto</h3><button class="action-btn" onclick="fecharModal('modal-projeto')"><i class="ti ti-x"></i></button></div>
+    <div class="modal-body">
+      <input type="hidden" id="proj-id">
+      <div class="form-row"><label class="form-label">Nome do projeto *</label><input class="form-input" id="proj-nome" placeholder="Ex: Viaduto BR-116"></div>
+      <div class="form-row"><label class="form-label">Cliente *</label><input class="form-input" id="proj-cliente" placeholder="Nome do cliente"></div>
+      <div class="form-row"><label class="form-label">Responsável técnico</label><select class="form-input" id="proj-responsavel"><option value="">Selecione...</option></select></div>
+      <div class="form-row"><label class="form-label">Data de início *</label><input class="form-input" type="date" id="proj-data"></div>
+      <div class="form-row"><label class="form-label">Status *</label>
+        <select class="form-input" id="proj-status">
+          <option value="ativo">Ativo</option><option value="revisao">Revisão</option>
+          <option value="concluido">Concluído</option><option value="parado">Parado</option>
+        </select>
+      </div>
+      <div class="form-row"><label class="form-label">Descrição</label><textarea class="form-input" id="proj-desc" rows="2" placeholder="Descrição opcional"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="fecharModal('modal-projeto')">Cancelar</button>
+      <button class="btn primary" id="btn-salvar-projeto" onclick="salvarProjeto()">Salvar projeto</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL UPLOAD -->
+<div class="modal-overlay" id="modal-upload" style="display:none">
+  <div class="modal">
+    <div class="modal-header"><h3>Enviar documento</h3><button class="action-btn" onclick="fecharModal('modal-upload')"><i class="ti ti-x"></i></button></div>
+    <div class="modal-body">
+      <div class="upload-area" id="upload-area" onclick="document.getElementById('file-input').click()" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="fileDrop(event)">
+        <i class="ti ti-cloud-upload"></i>
+        <p>Clique ou arraste o arquivo aqui</p>
+        <span>PDF, DWG, DOCX, XLSX, Imagens — máx. 50 MB</span>
+        <div class="upload-file-name" id="upload-file-name"></div>
+      </div>
+      <input type="file" id="file-input" style="display:none" accept=".pdf,.dwg,.docx,.xlsx,.xls,.jpg,.jpeg,.png,.gif,.webp" onchange="fileSelected(this)">
+      <div class="form-row" style="margin-top:14px"><label class="form-label">Projeto *</label><select class="form-input" id="upload-projeto"><option value="">Selecione o projeto...</option></select></div>
+      <div class="form-row"><label class="form-label">Categoria</label>
+        <select class="form-input" id="upload-categoria">
+          <option value="">Sem categoria</option>
+          <option value="estrutural">Estrutural</option><option value="eletrico">Elétrico</option>
+          <option value="hidraulico">Hidráulico</option><option value="financeiro">Financeiro</option>
+          <option value="juridico">Jurídico</option><option value="obra">Obra</option><option value="outro">Outro</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="fecharModal('modal-upload')">Cancelar</button>
+      <button class="btn primary" id="btn-enviar" onclick="enviarDocumento()"><i class="ti ti-upload"></i> Enviar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL USUÁRIO -->
+<div class="modal-overlay" id="modal-usuario" style="display:none">
+  <div class="modal">
+    <div class="modal-header"><h3>Novo usuário</h3><button class="action-btn" onclick="fecharModal('modal-usuario')"><i class="ti ti-x"></i></button></div>
+    <div class="modal-body">
+      <div class="form-row"><label class="form-label">Nome completo *</label><input class="form-input" id="u-nome" placeholder="Nome do usuário"></div>
+      <div class="form-row"><label class="form-label">E-mail *</label><input class="form-input" type="email" id="u-email" placeholder="email@empresa.com.br"></div>
+      <div class="form-row"><label class="form-label">Perfil *</label>
+        <select class="form-input" id="u-perfil">
+          <option value="visualizador">Visualizador</option>
+          <option value="engenheiro">Engenheiro</option>
+          <option value="administrador">Administrador</option>
+        </select>
+      </div>
+      <div class="form-row"><label class="form-label">Senha inicial *</label><input class="form-input" type="password" id="u-senha" placeholder="Mínimo 8 caracteres"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="fecharModal('modal-usuario')">Cancelar</button>
+      <button class="btn primary" onclick="salvarUsuario()">Cadastrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast & Loading -->
+<div class="toast" id="toast"></div>
+<div id="loading"><div class="spinner-lg"></div></div>
+
+<script src="app.js"></script>
+<script>
+// =============================================
+// Inicialização
+// =============================================
+const usuario = getUsuario()
+
+document.getElementById('nav-nome').textContent = usuario?.nome || '—'
+document.getElementById('nav-perfil').textContent = usuario?.perfil || '—'
+document.getElementById('nav-avatar').textContent = (usuario?.nome || '?').slice(0,2).toUpperCase()
+
+// Oculta itens só de admin
+if (usuario?.perfil !== 'administrador') {
+  document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none')
+}
+// Oculta botões de ação para visualizador
+if (usuario?.perfil === 'visualizador') {
+  document.querySelectorAll('.engenheiro-ok').forEach(el => el.style.display = 'none')
+}
+
+// Navegação
+document.querySelectorAll('.nav-item[data-page]').forEach(el => {
+  el.addEventListener('click', () => irPara(el.dataset.page))
+})
+
+function irPara(page) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'))
+  document.querySelector(`.nav-item[data-page="${page}"]`)?.classList.add('active')
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'))
+  document.getElementById(`page-${page}`)?.classList.add('active')
+  const titles = { dashboard:'Dashboard', projetos:'Projetos', documentos:'Documentos', usuarios:'Usuários', historico:'Histórico', relatorios:'Relatórios' }
+  document.getElementById('page-title').textContent = titles[page] || page
+  if (page === 'dashboard') carregarDashboard()
+  if (page === 'projetos') carregarProjetos()
+  if (page === 'documentos') carregarDocumentos()
+  if (page === 'usuarios') carregarUsuarios()
+  if (page === 'historico') carregarHistorico()
+  if (page === 'relatorios') carregarRelatorios()
+}
+
+// Carrega dashboard ao iniciar
+carregarDashboard()
+
+// =============================================
+// Dashboard
+// =============================================
+async function carregarDashboard() {
+  try {
+    const [resumo, projetos, historico] = await Promise.all([
+      Api.resumoGeral(),
+      Api.listarProjetos(),
+      Api.listarHistorico({ limite: 5 })
+    ])
+
+    document.getElementById('s-projetos').textContent = resumo.projetos.total
+    document.getElementById('s-projetos-sub').textContent = `${resumo.projetos.por_status?.ativo || 0} em andamento`
+    document.getElementById('s-docs').textContent = resumo.documentos.total
+    document.getElementById('s-docs-sub').textContent = `+${resumo.documentos.este_mes} este mês`
+    document.getElementById('s-users').textContent = resumo.usuarios.total
+    document.getElementById('s-users-sub').textContent = `${resumo.usuarios.ativos} ativos`
+    const mb = resumo.armazenamento.mb
+    document.getElementById('s-storage').textContent = mb + ' MB'
+    document.getElementById('s-storage-bar').style.width = Math.min(mb / 1024 * 100, 100) + '%'
+
+    // Tabela projetos
+    const tbody = document.getElementById('dash-projetos')
+    if (!projetos.length) { tbody.innerHTML = '<tr class="empty-row"><td colspan="3">Nenhum projeto.</td></tr>'; return }
+    tbody.innerHTML = projetos.slice(0,5).map(p => `
+      <tr>
+        <td><div style="font-weight:500;color:#f1f5f9">${p.nome}</div><div style="font-size:11px;color:#475569">${p.cliente}</div></td>
+        <td>${badgeStatus(p.status)}</td>
+        <td>${p.documentos?.[0]?.count || 0}</td>
+      </tr>`).join('')
+
+    // Histórico
+    const histEl = document.getElementById('dash-historico')
+    if (!historico.registros.length) { histEl.innerHTML = '<div style="text-align:center;color:#475569;padding:20px;font-size:13px">Sem atividades.</div>'; return }
+    histEl.innerHTML = historico.registros.map(h => {
+      const iconMap = { upload:'up', exclusao:'del', edicao_doc:'edit', edicao_projeto:'edit', cadastro_usuario:'edit' }
+      const icoMap = { upload:'ti-upload', exclusao:'ti-trash', edicao_doc:'ti-edit', edicao_projeto:'ti-edit', cadastro_usuario:'ti-user-plus' }
+      return `<div class="activity-item">
+        <div class="act-icon ${iconMap[h.acao]||'edit'}"><i class="ti ${icoMap[h.acao]||'ti-edit'}"></i></div>
+        <div><div class="act-text">${h.descricao}</div><div class="act-time">${formatDataHora(h.criado_em)} · ${h.usuario?.nome||'—'}</div></div>
+      </div>`
+    }).join('')
+  } catch(e) {
+    console.error(e)
+  }
+}
+
+// =============================================
+// Projetos
+// =============================================
+let _projetos = []
+
+async function carregarProjetos() {
+  const status = document.getElementById('filtro-status-proj').value
+  const cliente = document.getElementById('filtro-cliente').value
+  const params = {}
+  if (status) params.status = status
+  if (cliente) params.cliente = cliente
+  try {
+    _projetos = await Api.listarProjetos(params)
+    renderProjetos(_projetos)
+    popularSelectProjetos()
+  } catch(e) { showToast('Erro ao carregar projetos.', 'error') }
+}
+
+function renderProjetos(lista) {
+  const tbody = document.getElementById('tbody-projetos')
+  if (!lista.length) { tbody.innerHTML = '<tr class="empty-row"><td colspan="7">Nenhum projeto encontrado.</td></tr>'; return }
+  tbody.innerHTML = lista.map(p => `
+    <tr>
+      <td><div style="font-weight:500;color:#f1f5f9">${p.nome}</div></td>
+      <td>${p.cliente}</td>
+      <td>${p.responsavel?.nome || '—'}</td>
+      <td>${formatData(p.data_inicio)}</td>
+      <td>${badgeStatus(p.status)}</td>
+      <td>${p.documentos?.[0]?.count || 0}</td>
+      <td style="display:flex;gap:6px">
+        <button class="action-btn" onclick="verDocumentosProjeto('${p.id}')" title="Ver documentos"><i class="ti ti-folder-open"></i></button>
+        ${temPermissao('administrador','engenheiro') ? `<button class="action-btn" onclick="editarProjeto('${p.id}')" title="Editar"><i class="ti ti-edit"></i></button>` : ''}
+        ${temPermissao('administrador') ? `<button class="action-btn red" onclick="removerProjeto('${p.id}','${p.nome}')" title="Excluir"><i class="ti ti-trash"></i></button>` : ''}
+      </td>
+    </tr>`).join('')
+}
+
+function verDocumentosProjeto(id) {
+  document.getElementById('filtro-projeto-doc').value = id
+  irPara('documentos')
+  carregarDocumentos()
+}
+
+function abrirModalProjeto(proj = null) {
+  document.getElementById('proj-id').value = proj?.id || ''
+  document.getElementById('proj-nome').value = proj?.nome || ''
+  document.getElementById('proj-cliente').value = proj?.cliente || ''
+  document.getElementById('proj-data').value = proj?.data_inicio || ''
+  document.getElementById('proj-status').value = proj?.status || 'ativo'
+  document.getElementById('proj-desc').value = proj?.descricao || ''
+  document.getElementById('modal-projeto-titulo').textContent = proj ? 'Editar projeto' : 'Novo projeto'
+  // Popular select responsáveis
+  carregarResponsaveis(proj?.responsavel?.id)
+  document.getElementById('modal-projeto').style.display = 'flex'
+}
+
+async function carregarResponsaveis(selecionado) {
+  try {
+    const users = await Api.listarUsuarios()
+    const sel = document.getElementById('proj-responsavel')
+    sel.innerHTML = '<option value="">Selecione...</option>' +
+      users.filter(u => u.perfil !== 'visualizador').map(u =>
+        `<option value="${u.id}" ${u.id === selecionado ? 'selected' : ''}>${u.nome}</option>`).join('')
+  } catch {}
+}
+
+async function editarProjeto(id) {
+  try {
+    const proj = await Api.buscarProjeto(id)
+    abrirModalProjeto(proj)
+  } catch(e) { showToast('Erro ao carregar projeto.', 'error') }
+}
+
+async function salvarProjeto() {
+  const id = document.getElementById('proj-id').value
+  const body = {
+    nome: document.getElementById('proj-nome').value.trim(),
+    cliente: document.getElementById('proj-cliente').value.trim(),
+    responsavel_id: document.getElementById('proj-responsavel').value || undefined,
+    data_inicio: document.getElementById('proj-data').value,
+    status: document.getElementById('proj-status').value,
+    descricao: document.getElementById('proj-desc').value.trim() || undefined
+  }
+  if (!body.nome || !body.cliente || !body.data_inicio) {
+    showToast('Preencha os campos obrigatórios.', 'error'); return
+  }
+  const btn = document.getElementById('btn-salvar-projeto')
+  btn.disabled = true
+  try {
+    if (id) { await Api.atualizarProjeto(id, body); showToast('Projeto atualizado!') }
+    else { await Api.criarProjeto(body); showToast('Projeto criado!') }
+    fecharModal('modal-projeto')
+    carregarProjetos()
+  } catch(e) { showToast(e.message, 'error') }
+  finally { btn.disabled = false }
+}
+
+async function removerProjeto(id, nome) {
+  if (!confirmar(`Remover o projeto "${nome}"? Todos os documentos serão excluídos.`)) return
+  try {
+    await Api.removerProjeto(id)
+    showToast('Projeto removido.')
+    carregarProjetos()
+  } catch(e) { showToast(e.message, 'error') }
+}
+
+function popularSelectProjetos() {
+  const sels = ['filtro-projeto-doc', 'upload-projeto']
+  sels.forEach(sid => {
+    const sel = document.getElementById(sid)
+    if (!sel) return
+    const atual = sel.value
+    sel.innerHTML = '<option value="">Todos os projetos</option>' +
+      _projetos.map(p => `<option value="${p.id}">${p.nome}</option>`).join('')
+    if (atual) sel.value = atual
+  })
+}
+
+// =============================================
+// Documentos
+// =============================================
+async function carregarDocumentos() {
+  if (!_projetos.length) await carregarProjetos()
+  const params = {}
+  const proj = document.getElementById('filtro-projeto-doc').value
+  const tipo = document.getElementById('filtro-tipo-doc').value
+  const nome = document.getElementById('filtro-nome-doc').value
+  if (proj) params.projeto_id = proj
+  if (tipo) params.tipo_arquivo = tipo
+  if (nome) params.nome = nome
+  try {
+    const docs = await Api.listarDocumentos(params)
+    renderDocumentos(docs)
+  } catch(e) { showToast('Erro ao carregar documentos.', 'error') }
+}
+
+function renderDocumentos(lista) {
+  const tbody = document.getElementById('tbody-docs')
+  if (!lista.length) { tbody.innerHTML = '<tr class="empty-row"><td colspan="7">Nenhum documento encontrado.</td></tr>'; return }
+  tbody.innerHTML = lista.map(d => `
+    <tr>
+      <td><div style="display:flex;align-items:center;gap:8px">${fileIcon(d.tipo_arquivo)}<span>${d.nome_original}</span></div></td>
+      <td>${d.projeto?.nome || '—'}</td>
+      <td>${d.categoria || '—'}</td>
+      <td>${formatBytes(d.tamanho_bytes)}</td>
+      <td>${d.enviado_por_usuario?.nome || '—'}</td>
+      <td>${formatData(d.criado_em)}</td>
+      <td style="display:flex;gap:6px">
+        <button class="action-btn" onclick="baixarDocumento('${d.id}','${d.nome_original}')" title="Download"><i class="ti ti-download"></i></button>
+        ${temPermissao('administrador') ? `<button class="action-btn red" onclick="removerDocumento('${d.id}','${d.nome_original}')" title="Excluir"><i class="ti ti-trash"></i></button>` : ''}
+      </td>
+    </tr>`).join('')
+}
+
+async function baixarDocumento(id, nome) {
+  try {
+    showLoading(true)
+    const data = await Api.downloadDocumento(id)
+    const a = document.createElement('a')
+    a.href = data.url
+    a.download = nome
+    a.target = '_blank'
+    a.click()
+    showToast('Download iniciado.')
+  } catch(e) { showToast('Erro ao baixar arquivo.', 'error') }
+  finally { showLoading(false) }
+}
+
+async function removerDocumento(id, nome) {
+  if (!confirmar(`Excluir o arquivo "${nome}"?`)) return
+  try {
+    await Api.removerDocumento(id)
+    showToast('Documento excluído.')
+    carregarDocumentos()
+  } catch(e) { showToast(e.message, 'error') }
+}
+
+// Upload
+let _arquivoSelecionado = null
+
+function abrirModalUpload() {
+  _arquivoSelecionado = null
+  document.getElementById('file-input').value = ''
+  document.getElementById('upload-file-name').style.display = 'none'
+  document.getElementById('upload-projeto').value = ''
+  document.getElementById('upload-categoria').value = ''
+  if (!_projetos.length) carregarProjetos()
+  else popularSelectProjetos()
+  document.getElementById('modal-upload').style.display = 'flex'
+}
+
+function fileSelected(input) {
+  if (input.files[0]) {
+    _arquivoSelecionado = input.files[0]
+    const el = document.getElementById('upload-file-name')
+    el.textContent = _arquivoSelecionado.name
+    el.style.display = 'block'
+  }
+}
+
+function dragOver(e) { e.preventDefault(); document.getElementById('upload-area').classList.add('drag') }
+function dragLeave() { document.getElementById('upload-area').classList.remove('drag') }
+function fileDrop(e) {
+  e.preventDefault()
+  dragLeave()
+  const file = e.dataTransfer.files[0]
+  if (file) { _arquivoSelecionado = file; const el = document.getElementById('upload-file-name'); el.textContent = file.name; el.style.display = 'block' }
+}
+
+async function enviarDocumento() {
+  if (!_arquivoSelecionado) { showToast('Selecione um arquivo.', 'error'); return }
+  const projeto_id = document.getElementById('upload-projeto').value
+  if (!projeto_id) { showToast('Selecione o projeto.', 'error'); return }
+
+  const form = new FormData()
+  form.append('arquivo', _arquivoSelecionado)
+  form.append('projeto_id', projeto_id)
+  const cat = document.getElementById('upload-categoria').value
+  if (cat) form.append('categoria', cat)
+
+  const btn = document.getElementById('btn-enviar')
+  btn.disabled = true
+  btn.innerHTML = '<div class="spinner-lg" style="width:14px;height:14px;border-width:2px"></div> Enviando...'
+
+  try {
+    await Api.uploadDocumento(form)
+    showToast('Arquivo enviado com sucesso!')
+    fecharModal('modal-upload')
+    carregarDocumentos()
+  } catch(e) { showToast(e.message, 'error') }
+  finally { btn.disabled = false; btn.innerHTML = '<i class="ti ti-upload"></i> Enviar' }
+}
+
+// =============================================
+// Usuários
+// =============================================
+async function carregarUsuarios() {
+  try {
+    const users = await Api.listarUsuarios()
+    const cores = ['#1d4ed8','#166534','#7c3aed','#b45309','#be185d']
+    document.getElementById('lista-usuarios').innerHTML = `
+      <table><thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Status</th><th>Ações</th></tr></thead>
+      <tbody>${users.map((u,i) => `
+        <tr>
+          <td><div style="display:flex;align-items:center;gap:10px">
+            <div class="u-avatar" style="background:${cores[i%cores.length]}">${u.nome.slice(0,2).toUpperCase()}</div>
+            <span style="font-weight:500;color:#f1f5f9">${u.nome}</span>
+          </div></td>
+          <td>${u.email}</td>
+          <td>${badgePerfil(u.perfil)}</td>
+          <td>${u.ativo ? '<span class="badge green">Ativo</span>' : '<span class="badge gray">Inativo</span>'}</td>
+          <td style="display:flex;gap:6px">
+            ${u.ativo ? `<button class="action-btn red" onclick="desativarUsuario('${u.id}','${u.nome}')" title="Desativar"><i class="ti ti-user-off"></i></button>` : ''}
+          </td>
+        </tr>`).join('')}
+      </tbody></table>`
+  } catch(e) { showToast('Erro ao carregar usuários.', 'error') }
+}
+
+function abrirModalUsuario() {
+  document.getElementById('u-nome').value = ''
+  document.getElementById('u-email').value = ''
+  document.getElementById('u-perfil').value = 'visualizador'
+  document.getElementById('u-senha').value = ''
+  document.getElementById('modal-usuario').style.display = 'flex'
+}
+
+async function salvarUsuario() {
+  const body = {
+    nome: document.getElementById('u-nome').value.trim(),
+    email: document.getElementById('u-email').value.trim(),
+    perfil: document.getElementById('u-perfil').value,
+    senha: document.getElementById('u-senha').value
+  }
+  if (!body.nome || !body.email || !body.senha) { showToast('Preencha todos os campos.', 'error'); return }
+  try {
+    await Api.criarUsuario(body)
+    showToast('Usuário cadastrado!')
+    fecharModal('modal-usuario')
+    carregarUsuarios()
+  } catch(e) { showToast(e.message, 'error') }
+}
+
+async function desativarUsuario(id, nome) {
+  if (!confirmar(`Desativar o usuário "${nome}"?`)) return
+  try {
+    await Api.removerUsuario(id)
+    showToast('Usuário desativado.')
+    carregarUsuarios()
+  } catch(e) { showToast(e.message, 'error') }
+}
+
+// =============================================
+// Histórico
+// =============================================
+async function carregarHistorico() {
+  const params = { limite: 50 }
+  const acao = document.getElementById('filtro-acao-hist').value
+  const inicio = document.getElementById('filtro-hist-inicio').value
+  const fim = document.getElementById('filtro-hist-fim').value
+  if (acao) params.acao = acao
+  if (inicio) params.data_inicio = inicio
+  if (fim) params.data_fim = fim
+  try {
+    const data = await Api.listarHistorico(params)
+    const badgeAcao = { upload:'green', exclusao:'red', edicao_doc:'blue', edicao_projeto:'blue', cadastro_usuario:'amber' }
+    const labelAcao = { upload:'Upload', exclusao:'Exclusão', edicao_doc:'Edição doc.', edicao_projeto:'Edição projeto', cadastro_usuario:'Cadastro' }
+    const tbody = document.getElementById('tbody-hist')
+    if (!data.registros.length) { tbody.innerHTML = '<tr class="empty-row"><td colspan="5">Nenhum registro encontrado.</td></tr>'; return }
+    tbody.innerHTML = data.registros.map(h => `
+      <tr>
+        <td style="font-size:12px;color:#64748b;white-space:nowrap">${formatDataHora(h.criado_em)}</td>
+        <td><span class="badge ${badgeAcao[h.acao]||'gray'}">${labelAcao[h.acao]||h.acao}</span></td>
+        <td style="font-size:12px">${h.descricao}</td>
+        <td style="font-size:12px">${h.projeto?.nome || '—'}</td>
+        <td style="font-size:12px">${h.usuario?.nome || '—'}</td>
+      </tr>`).join('')
+  } catch(e) { showToast('Erro ao carregar histórico.', 'error') }
+}
+
+// =============================================
+// Relatórios
+// =============================================
+let _charts = {}
+
+async function carregarRelatorios() {
+  try {
+    const hoje = new Date()
+    const fim = hoje.toISOString().slice(0,10)
+    const inicio = new Date(hoje - 30*24*60*60*1000).toISOString().slice(0,10)
+
+    const [resumo, porProjeto, porPeriodo] = await Promise.all([
+      Api.resumoGeral(),
+      Api.docsPorProjeto(),
+      Api.docsPorPeriodo(inicio, fim)
+    ])
+
+    // Resumo
+    document.getElementById('resumo-card').innerHTML = `
+      <div class="card-title">Resumo geral</div>
+      <table style="font-size:13px;width:100%"><tbody>
+        <tr><td style="padding:7px 0;color:#64748b">Total de documentos</td><td style="text-align:right;font-weight:600;color:#f1f5f9">${resumo.documentos.total}</td></tr>
+        <tr style="border-top:1px solid #334155"><td style="padding:7px 0;color:#64748b">Projetos ativos</td><td style="text-align:right;font-weight:600;color:#f1f5f9">${resumo.projetos.por_status?.ativo||0}</td></tr>
+        <tr style="border-top:1px solid #334155"><td style="padding:7px 0;color:#64748b">Usuários cadastrados</td><td style="text-align:right;font-weight:600;color:#f1f5f9">${resumo.usuarios.total}</td></tr>
+        <tr style="border-top:1px solid #334155"><td style="padding:7px 0;color:#64748b">Uploads este mês</td><td style="text-align:right;font-weight:600;color:#f1f5f9">${resumo.documentos.este_mes}</td></tr>
+        <tr style="border-top:1px solid #334155"><td style="padding:7px 0;color:#64748b">Armazenamento</td><td style="text-align:right;font-weight:600;color:#f1f5f9">${resumo.armazenamento.mb} MB</td></tr>
+      </tbody></table>`
+
+    const grid = '#334155'; const label = '#64748b'
+
+    // Chart por projeto
+    if (_charts.proj) _charts.proj.destroy()
+    _charts.proj = new Chart(document.getElementById('chart-proj'), {
+      type: 'bar',
+      data: {
+        labels: porProjeto.map(p => p.nome.length > 14 ? p.nome.slice(0,14)+'…' : p.nome),
+        datasets: [{ data: porProjeto.map(p => p.total_documentos), backgroundColor: '#3b82f6', borderRadius: 4, borderWidth: 0 }]
+      },
+      options: { plugins:{legend:{display:false}}, scales:{x:{grid:{color:grid},ticks:{color:label,font:{size:11}}},y:{grid:{color:grid},ticks:{color:label,font:{size:11}}}}, maintainAspectRatio:false }
+    })
+
+    // Chart por tipo
+    const tipos = resumo.documentos.por_tipo || {}
+    if (_charts.tipo) _charts.tipo.destroy()
+    _charts.tipo = new Chart(document.getElementById('chart-tipo'), {
+      type: 'doughnut',
+      data: {
+        labels: Object.keys(tipos).map(t => t.toUpperCase()),
+        datasets: [{ data: Object.values(tipos), backgroundColor: ['#ef4444','#3b82f6','#6366f1','#22c55e','#f97316'], borderWidth: 0 }]
+      },
+      options: { plugins:{legend:{position:'right',labels:{color:label,font:{size:11},boxWidth:12}}}, cutout:'65%', maintainAspectRatio:false }
+    })
+
+    // Chart por período
+    const dias = porPeriodo.por_dia || []
+    if (_charts.periodo) _charts.periodo.destroy()
+    _charts.periodo = new Chart(document.getElementById('chart-periodo'), {
+      type: 'line',
+      data: {
+        labels: dias.map(d => d.data.slice(5)),
+        datasets: [{ data: dias.map(d => d.qtd), borderColor:'#3b82f6', backgroundColor:'rgba(59,130,246,0.1)', fill:true, tension:.4, pointRadius:3, pointBackgroundColor:'#3b82f6', borderWidth:1.5 }]
+      },
+      options: { plugins:{legend:{display:false}}, scales:{x:{grid:{color:grid},ticks:{color:label,font:{size:11}}},y:{grid:{color:grid},ticks:{color:label,font:{size:11}}}}, maintainAspectRatio:false }
+    })
+  } catch(e) { console.error(e); showToast('Erro ao carregar relatórios.', 'error') }
+}
+
+// =============================================
+// Busca global
+// =============================================
+function buscaGlobal(v) {
+  if (!v.trim()) return
+  document.getElementById('filtro-nome-doc').value = v
+  irPara('documentos')
+  carregarDocumentos()
+}
+
+// =============================================
+// Modais
+// =============================================
+function fecharModal(id) { document.getElementById(id).style.display = 'none' }
+
+// Fecha modal ao clicar fora
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.style.display = 'none' })
+})
+</script>
+</body>
+</html>

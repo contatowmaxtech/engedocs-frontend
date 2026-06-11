@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EngeDocs — Login</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',sans-serif;background:#0f172a;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+  .card{background:#1e293b;border:1px solid #334155;border-radius:16px;padding:40px;width:100%;max-width:400px}
+  .logo{display:flex;align-items:center;gap:10px;margin-bottom:32px}
+  .logo-icon{width:40px;height:40px;background:linear-gradient(135deg,#3b82f6,#1d4ed8);border-radius:10px;display:flex;align-items:center;justify-content:center}
+  .logo-icon i{font-size:22px;color:#fff}
+  .logo-text{font-size:20px;font-weight:600;color:#f1f5f9}
+  .logo-sub{font-size:12px;color:#64748b;margin-top:1px}
+  h1{font-size:22px;font-weight:600;color:#f1f5f9;margin-bottom:6px}
+  .subtitle{font-size:14px;color:#64748b;margin-bottom:28px}
+  .field{margin-bottom:16px}
+  label{display:block;font-size:13px;font-weight:500;color:#94a3b8;margin-bottom:6px}
+  input{width:100%;padding:11px 14px;background:#0f172a;border:1px solid #334155;border-radius:8px;font-size:14px;color:#f1f5f9;outline:none;transition:border .2s}
+  input:focus{border-color:#3b82f6}
+  input::placeholder{color:#475569}
+  .btn{width:100%;padding:12px;background:linear-gradient(135deg,#3b82f6,#1d4ed8);border:none;border-radius:8px;font-size:14px;font-weight:600;color:#fff;cursor:pointer;margin-top:8px;transition:opacity .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+  .btn:hover{opacity:.9}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .error{background:#450a0a;border:1px solid #7f1d1d;border-radius:8px;padding:10px 14px;font-size:13px;color:#fca5a5;margin-bottom:16px;display:none}
+  .spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">
+    <div class="logo-icon"><i class="ti ti-building-factory-2"></i></div>
+    <div><div class="logo-text">EngeDocs</div><div class="logo-sub">Gestão Documental</div></div>
+  </div>
+  <h1>Bem-vindo</h1>
+  <p class="subtitle">Acesse com suas credenciais</p>
+  <div class="error" id="error-msg"></div>
+  <div class="field">
+    <label>E-mail</label>
+    <input type="email" id="email" placeholder="seu@email.com.br" autocomplete="email">
+  </div>
+  <div class="field">
+    <label>Senha</label>
+    <input type="password" id="senha" placeholder="••••••••" autocomplete="current-password">
+  </div>
+  <button class="btn" id="btn-login" onclick="fazerLogin()">
+    <span id="btn-text">Entrar</span>
+  </button>
+</div>
+
+<script>
+const API = 'https://engedocs-backend-production.up.railway.app'
+
+document.getElementById('senha').addEventListener('keydown', e => {
+  if (e.key === 'Enter') fazerLogin()
+})
+
+async function fazerLogin() {
+  const email = document.getElementById('email').value.trim()
+  const senha = document.getElementById('senha').value
+  const btn = document.getElementById('btn-login')
+  const btnText = document.getElementById('btn-text')
+  const errorEl = document.getElementById('error-msg')
+
+  errorEl.style.display = 'none'
+
+  if (!email || !senha) {
+    mostrarErro('Preencha e-mail e senha.')
+    return
+  }
+
+  btn.disabled = true
+  btnText.innerHTML = '<div class="spinner"></div>'
+
+  try {
+    const res = await fetch(`${API}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, senha })
+    })
+
+    const data = await res.json()
+
+    if (!res.ok) {
+      mostrarErro(data.erro || 'Erro ao fazer login.')
+      return
+    }
+
+    localStorage.setItem('token', data.token)
+    localStorage.setItem('usuario', JSON.stringify(data.usuario))
+    window.location.href = 'index.html'
+  } catch (err) {
+    mostrarErro('Não foi possível conectar ao servidor.')
+  } finally {
+    btn.disabled = false
+    btnText.textContent = 'Entrar'
+  }
+}
+
+function mostrarErro(msg) {
+  const el = document.getElementById('error-msg')
+  el.textContent = msg
+  el.style.display = 'block'
+}
+
+// Se já está logado, vai direto pro app
+if (localStorage.getItem('token')) window.location.href = 'index.html'
+</script>
+</body>
+</html>
